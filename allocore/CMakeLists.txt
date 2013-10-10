@@ -62,12 +62,19 @@ endif()
 file(GLOB ALLOCORE_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} allocore/*/*.hpp)
 #file(GLOB ALLOCORE_HEADER_DIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} allocore/*)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-add_library(allocore ${ALLOCORE_SRC} ${ALLOCORE_HEADERS})
+add_library(allocore SHARED ${ALLOCORE_SRC} ${ALLOCORE_HEADERS})
+add_library(allocore-static STATIC ${ALLOCORE_SRC} ${ALLOCORE_HEADERS})
 
 set_target_properties(allocore 
   PROPERTIES 
   ALLOCORE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}"
   )
+set_target_properties(allocore-static 
+  PROPERTIES 
+  ALLOCORE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}"
+  )
+
+
 set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/build/lib)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/build/bin)
 
@@ -174,7 +181,13 @@ set_target_properties(allocore
   PROPERTIES 
   ALLOCORE_LINK_LIBRARIES "${ALLOCORE_LINK_LIBRARIES}"
   )
+set_target_properties(allocore-static
+  PROPERTIES 
+  ALLOCORE_LINK_LIBRARIES "${ALLOCORE_LINK_LIBRARIES}"
+  )
+
 target_link_libraries(allocore ${ALLOCORE_LINK_LIBRARIES})
+target_link_libraries(allocore-static ${ALLOCORE_LINK_LIBRARIES})
 
 # Doxygen documentation target
 add_custom_target("doc"
@@ -217,6 +230,7 @@ if(NOT NO_EXAMPLES)
 	WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
 	SOURCES ${example}
 	COMMENT "Running: ${EXAMPLE_TARGET}")
+      install(TARGETS "${EXAMPLE_TARGET}" DESTINATION ${CMAKE_INSTALL_PREFIX}/bin COMPONENT examples)
     endforeach(example)
   endforeach(dir)
 
@@ -240,5 +254,6 @@ endif(NOT NO_EXAMPLES)
 
 
 # installation
-install(DIRECTORY allocore/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/allocore)
-install(TARGETS allocore DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(DIRECTORY allocore/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/allocore COMPONENT allocore-dev)
+install(TARGETS allocore-static DESTINATION ${CMAKE_INSTALL_PREFIX}/lib COMPONENT allocore-dev)
+install(TARGETS allocore DESTINATION ${CMAKE_INSTALL_PREFIX}/lib COMPONENT allocore)

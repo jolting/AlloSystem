@@ -16,9 +16,14 @@ set(ALLOUTIL_SRC
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../cmake_modules")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(alloutil ${ALLOUTIL_SRC})
+add_library(alloutil SHARED ${ALLOUTIL_SRC})
+add_library(alloutil-static STATIC ${ALLOUTIL_SRC})
 set(ALLOUTIL_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${LUA_INCLUDE_DIR})
 set_target_properties(alloutil 
+  PROPERTIES 
+  ALLOUTIL_INCLUDE_DIR "${ALLOUTIL_DIRS}"
+  )
+set_target_properties(alloutil-static
   PROPERTIES 
   ALLOUTIL_INCLUDE_DIR "${ALLOUTIL_DIRS}"
   )
@@ -57,8 +62,13 @@ set_target_properties(alloutil
   PROPERTIES 
   ALLOUTIL_LINK_LIBRARIES "${ALLOUTIL_LINK_LIBRARIES}"
   )
+set_target_properties(alloutil-static 
+  PROPERTIES 
+  ALLOUTIL_LINK_LIBRARIES "${ALLOUTIL_LINK_LIBRARIES}"
+  )
 
 target_link_libraries(alloutil ${ALLOUTIL_LINK_LIBRARIES})
+target_link_libraries(alloutil-static ${ALLOUTIL_LINK_LIBRARIES})
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/build/lib)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/build/bin)
@@ -142,13 +152,15 @@ if(NOT NO_EXAMPLES)
 	DEPENDS "${EXAMPLE_TARGET}"
 	WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
 	SOURCES ${example})
+      install(TARGETS "${EXAMPLE_TARGET}" DESTINATION ${CMAKE_INSTALL_PREFIX}/bin COMPONENT examples)
     endforeach(example)
   endif(NOT (GAMMA_FOUND OR GAMMA_LIBRARY))
 endif(NOT NO_EXAMPLES)
 
 
 # installation
-install(DIRECTORY alloutil/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/alloutil)
-install(TARGETS alloutil DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(DIRECTORY alloutil/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/alloutil COMPONENT alloutil-dev)
+install(TARGETS alloutil-static DESTINATION ${CMAKE_INSTALL_PREFIX}/lib COMPONENT alloutil-dev)
+install(TARGETS alloutil DESTINATION ${CMAKE_INSTALL_PREFIX}/lib COMPONENT alloutil)
 
 
